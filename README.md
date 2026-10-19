@@ -22,3 +22,30 @@ In the week2 json file, the custom IAM policy conforming to the Least Privilege 
 When executing `aws s3 ls --profile s3 test` on the terminal triggers an AccessDenied error, it fully verifies the default denial logic in the AWS policy evaluation mechanism, proving that the user is precisely restricted to the minimum authorized scope and cannot arbitrarily snoop on or laterally access other resources in the account. 
 
 Furthermore, during the troubleshooting process in Debug Lab 2.3, I also gained a deeper understanding of the key differences between object-level ARNs (ending with `/*`) and storage-level ARNs (without `/*`). If a storage-level path is assigned to an object operation (such as s3:PutObject), it will be blocked due to resource mismatch. This demonstrates the importance of accurately defining cloud permission boundaries for system security and problem diagnosis.
+
+---
+
+
+## Week 3 Compute: EC2 Deployment, EBS Snapshots & Security Triage
+
+For Week 3, I successfully deployed PropertyLite on an EC2 instance using a User Data bootstrap script and verified both the `/health` and properties API endpoints. 
+
+I also practiced point-in-time backups by creating an EBS root volume snapshot. During the debug lab, I triaged an SSH connection timeout caused by client-side IP drift, identifying that Security Group 'My IP' is a static snapshot rather than a dynamic lookup.
+
+
+[View Week 03 Runbook](./week-03/runbook.md)
+---
+
+
+
+## Week 4 - AWS Storage & Database Architectural Decision Guide
+
+For Week 4, the focus was on AWS Storage and Databases. Here’s a quick summary of what I completed:   
+
+* S3 & Lifecycle Management: Created an S3 bucket and configured a 30-day lifecycle rule to transition objects to Glacier Flexible Retrieval.   
+
+* RDS & Data Governance: Provisioned an RDS MySQL instance and connected via EC2. I imported the ~600MB `rets_property` dataset and executed the data-governance workflow: dropping 17 sensitive PII columns and remapping MLS IDs to synthetic IDs `(R1xxxxx)` using `ROW_NUMBER()`.   
+
+* DynamoDB & Deliverable: Created the `Properties` DynamoDB table and verified key-based read/writes. Finally, I documented an architectural decision matrix comparing S3, EBS, EFS, RDS, and DynamoDB, and completed the full environment teardown with a clean billing check.
+
+[View Week 04 decision-guide](./week-04/decision-guide.md)

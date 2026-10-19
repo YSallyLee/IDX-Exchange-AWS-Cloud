@@ -2,32 +2,25 @@
 
 ## 1. Storage & Database Comparison Matrix
 
-| Service | Storage / Data Type | Access Pattern | Scaling & Performance | Key Limitations & Trade-offs | "Use this when..." |
+| Service | Data Type | Access Pattern | Advantages & Performance | Limitation & Disadvantages | "Use this when..." |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| **Amazon S3** | Object Storage (Key-Value) | REST API / HTTP(S); Read-heavy, write-once | Virtually unlimited storage; High throughput, higher latency compared to block storage | Not a POSIX file system; cannot be mounted as an OS boot drive; not suitable for partial in-place file modifications | **Use this when** you need durable, scalable, and cost-effective storage for unstructured data (images, backups, logs, static assets) accessible via web URLs. |
-| **Amazon EBS** | Block Storage | Attached directly to a single EC2 instance (within a single AZ) | Sub-millisecond latency, predictable and configurable IOPS (SSD-backed) | Bound to a specific Availability Zone and EC2 lifecycle; cannot be natively shared across multiple instances simultaneously | **Use this when** you need a fast, persistent root volume or high-performance local disk storage for a single EC2 instance. |
-| **Amazon EFS** | Managed File Storage (POSIX NFS) | Mountable concurrently by thousands of EC2 instances and containers | Automatically scales storage up and down; concurrent multi-client read/write | Higher cost per GB than EBS and S3; slightly higher latency than direct-attached EBS | **Use this when** multiple EC2 instances or container tasks (ECS/EKS) require shared, simultaneous access to a common file directory. |
-| **Amazon RDS (MySQL)** | Relational Database (SQL) | Structured SQL queries, complex multi-table joins, ACID transactions | Vertical scaling (compute/storage resizing); horizontal scaling via Read Replicas | Fixed schema; scaling write throughput requires database architecture complexity; higher management overhead | **Use this when** your application requires strict ACID transactional consistency, complex relational joins, or legacy SQL compatibility. |
-| **Amazon DynamoDB** | NoSQL Key-Value & Document Store | Key-value lookups (`GetItem`) and indexed range queries | Single-digit millisecond latency at any scale; automatic horizontal partitioning | Access patterns must be known ahead of time; does not support multi-table joins or ad-hoc complex analytical aggregations | **Use this when** you need predictable, single-digit millisecond latency at high scale with zero server maintenance for well-defined key-based lookups. |
+| **Amazon S3** | Object Storage (Key-Value) | Upload and download via API/HTTP URL | Nearly unlimited capacity, extremely durable, very inexpensive | Cannot be used as a bootable hard drive, unsuitable for frequent local text editing | **Use this when** when you need to store large amounts of unstructured files (such as property photos, logs, historical backups) and access them via URL.
+| **Amazon EBS** | Block Storage | Virtual disk mounted on a single EC2 instance | Extremely fast read/write speeds and ultra-low latency (SSD specifications) | Can only be bound to a single EC2 instance; cannot natively allow multiple machines to read/write simultaneously | **Use this when** when you need to provide a system boot disk or high-performance local cache for a single EC2 virtual machine. |
+| **Amazon EFS** | Shared file system (File Storage) | Mounted through standard Network File Protocol (NFS) | Allows hundreds of EC2s to be connected at the same time for shared reading and writing | More expensive than S3 and EBS, and the read and write latency is slightly higher than local hard drives | **Use this when** Multiple EC2 or container servers need to access the same shared folder "simultaneously". |
+| **Amazon RDS (MySQL)** | Relational Database (SQL Database) | Uses standard SQL syntax for querying and joining | Supports complex JOIN cross-table queries, transactional consistency, and powerful aggregation calculations | Difficult to scale (usually requires paying for server upgrades), high maintenance costs | Use this when: When the data structure is rigorous and complex join queries, cross-table calculations, or data cleaning and transformation are required.|
+| **Amazon DynamoDB** | NoSQL key-value/file database | Fetch data directly with primary key (Partition Key) | Automatically expand on demand, query speed is stable within a few milliseconds, regardless of the underlying server | Not suitable for complex multi-table associations (JOIN) or temporary complex statistical analysis | **Use this when** The access mode is very fixed (such as using a single ID to query data), and it needs to withstand extremely high traffic and extremely low latency. |
 
 ---
 
-## 2. Practical Application: PropertyLite Architecture Mapping
+## 2. Application scenarios of PropertyLite in actual projects
 
-* **Amazon S3**:
-  * *Context*: Configured to store property images (`L_Photos`) and weekly operational reporting exports, with an automated 30-day lifecycle rule transitioning objects to Glacier Flexible Retrieval.
-* **Amazon EBS**:
-  * *Context*: Served as the persistent root block volume for the `property-api-01` Amazon Linux 2023 EC2 instance.
-* **Amazon EFS**:
-  * *Context*: Suitable for future scenarios where multiple autoscaling API worker tasks require shared read/write access to centralized configuration assets or local temporary image caches.
-* **Amazon RDS (MySQL)**:
-  * *Context*: Hosted the raw `rets_property` dataset (55,000+ rows) to execute structured data governance operations—dropping 17 sensitive PII columns, remapping real MLS IDs to synthetic identifiers (`R1xxxxx`) via `ROW_NUMBER()`, and running analytical aggregations.
+* **S3**:
+Used to store real estate photos (`L_Photos`), and set to automatically transfer them to Glacier cryogenic storage after 30 days to save costs.
+* **EBS**:
+Use the system disk that our API server (`property-api-01`) boots up during Week 3.
+* **EFS**:
+If multiple API servers need to share the same cache or configuration file in the future, they can be mounted using EFS.
+* **RDS (MySQL)**:
+The original property data table of 55,000 entries was imported to perform data governance (removing 17 individual data fields, remapping and synthesizing IDs, and calculating the average price for each city).
 * **Amazon DynamoDB**:
-  * *Context*: Populated the `Properties` table with sanitized property data to support high-throughput, low-latency key lookups for single listing endpoints (`/properties/{listing_id}`) using the partition key `L_ListingID` (e.g., `R100001`).
-
----
-
-## 3. Core Architectural Takeaways
-
-1. **Storage Classification**: Use **EBS** for single-instance OS boot disks, **EFS** for shared network file systems, and **S3** for internet-accessible, durable unstructured object storage.
-2. **Database Engine Selection**: Choose **RDS** when data structures require complex relational modeling, data integrity guarantees, and flexible analytical querying. Choose **DynamoDB** when horizontal scalability, fully managed operations, and millisecond key-value retrieval are paramount.
+Create a `Properties` table so that when users enter a property code (e.g., `R100001`) on the front end, they can instantly view the property details.
