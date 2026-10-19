@@ -32,20 +32,25 @@ For Week 3, I successfully deployed PropertyLite on an EC2 instance using a User
 
 I also practiced point-in-time backups by creating an EBS root volume snapshot. During the debug lab, I triaged an SSH connection timeout caused by client-side IP drift, identifying that Security Group 'My IP' is a static snapshot rather than a dynamic lookup.
 
-
 [View Week 03 Runbook](./week-03/runbook.md)
+
+
 ---
 
 
 
 ## Week 4 - AWS Storage & Database Architectural Decision Guide
 
-For Week 4, the focus was on AWS Storage and Databases. Here’s a quick summary of what I completed:   
+For Week 4, I the focus was on AWS Storage and Databases. Here’s the step by step  
 
 * S3 & Lifecycle Management: Created an S3 bucket and configured a 30-day lifecycle rule to transition objects to Glacier Flexible Retrieval.   
 
 * RDS & Data Governance: Provisioned an RDS MySQL instance and connected via EC2. I imported the ~600MB `rets_property` dataset and executed the data-governance workflow: dropping 17 sensitive PII columns and remapping MLS IDs to synthetic IDs `(R1xxxxx)` using `ROW_NUMBER()`.   
 
-* DynamoDB & Deliverable: Created the `Properties` DynamoDB table and verified key-based read/writes. Finally, I documented an architectural decision matrix comparing S3, EBS, EFS, RDS, and DynamoDB, and completed the full environment teardown with a clean billing check.
+* DynamoDB & Deliverable: Created the `Properties` DynamoDB table wrote the cleaned synthetic data `(R10001)` for Key-Value query verification. This was mainly to simulate the low-latency scenario of checking details via property ID under high front-end traffic. It also pre-verified the data format for Week 7's Serverless architecture. 
+
+
+* Debug (from step 46): 
+In this week, the original debugging was an RDS security group network timeout, but my network connection worked smoothly during setup, and I didn't encounter any Security Group blocking issues. However, when executing Lab 4.2 data governance, I encountered another very real underlying database error during primary key conversion, because the original table's id field had an `AUTO_INCREMENT` attribute, MySQL restrictions prevented the direct removal of the old primary key, resulting in `ERROR 1075 (42000): Incorrect table definition; there can be only one auto column and it must be defined as a key`. I first removed the auto-increment attribute using `MODIFY id INT NOT NULL`, and then successfully bound the de-identified `L_ListingID` as the new primary key.
 
 [View Week 04 decision-guide](./week-04/decision-guide.md)
