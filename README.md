@@ -61,7 +61,9 @@ In this week, the original debugging was an RDS security group network timeout, 
 
 The focus of this week is to build a secure multi-layer VPC from scratch, and use Bastion Host (bastion host/springboard host) with SSH Agent Forwarding to securely connect to the private host isolated in the backend.
 
-Internet (Public Users / Laptop)
+
+```text
+                  Internet (Public Users / Laptop)
                                  │
                    [Internet Gateway (IGW)]
                                  │
@@ -77,6 +79,7 @@ Internet (Public Users / Laptop)
   │   - Backend Node / RDS Database (No Direct Internet Ingress)│
   │                                                             │
   └─────────────────────────────────────────────────────────────┘
+```
 
 
-![VPC Architecture Resource Map](vpc-diagram.png)
+[View Week 05 VPC Architecture Resource Map](./week-05/vpc-diagram.png)
