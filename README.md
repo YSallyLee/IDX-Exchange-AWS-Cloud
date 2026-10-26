@@ -54,3 +54,29 @@ For Week 4, I the focus was on AWS Storage and Databases. Here’s the step by s
 In this week, the original debugging was an RDS security group network timeout, but my network connection worked smoothly during setup, and I didn't encounter any Security Group blocking issues. However, when executing Lab 4.2 data governance, I encountered another very real underlying database error during primary key conversion, because the original table's id field had an `AUTO_INCREMENT` attribute, MySQL restrictions prevented the direct removal of the old primary key, resulting in `ERROR 1075 (42000): Incorrect table definition; there can be only one auto column and it must be defined as a key`. I first removed the auto-increment attribute using `MODIFY id INT NOT NULL`, and then successfully bound the de-identified `L_ListingID` as the new primary key.
 
 [View Week 04 decision-guide](./week-04/decision-guide.md)
+
+
+
+## Week 5 - Networking: Custom VPC Deep Dive & Bastion Host Pattern
+
+The focus of this week is to build a secure multi-layer VPC from scratch, and use Bastion Host (bastion host/springboard host) with SSH Agent Forwarding to securely connect to the private host isolated in the backend.
+
+Internet (Public Users / Laptop)
+                                 │
+                   [Internet Gateway (IGW)]
+                                 │
+  ┌──────────────────────────────┴──────────────────────────────┐
+  │  VPC: 10.0.0.0/16                                           │
+  │                                                             │
+  │  【Public Subnet】                                          │
+  │   - Bastion Host / Web Server (Internet Ingress/Egress)      │
+  │   - [NAT Gateway] (Outbound Egress Only) ───────┐           │
+  │                                                 │           │
+  │                                                 ▼           │
+  │  【Private Subnet】                                         │
+  │   - Backend Node / RDS Database (No Direct Internet Ingress)│
+  │                                                             │
+  └─────────────────────────────────────────────────────────────┘
+
+
+![VPC Architecture Resource Map](vpc-diagram.png)
