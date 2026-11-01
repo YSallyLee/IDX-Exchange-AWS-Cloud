@@ -86,9 +86,9 @@ The focus of this week is to build a secure multi-layer VPC from scratch, and us
 
 
 
-# Week 06 — Elastic Load Balancing & Auto Scaling
+## Week 06 — Elastic Load Balancing & Auto Scaling
 
-## 1. ASG behind an ALB
+### 1. ASG behind an ALB
 
 * **Application**: PropertyLite Flask API running on port `8080` (deployed via Launch Template User Data).
 * **Network & Compute**: 
@@ -97,24 +97,24 @@ The focus of this week is to build a secure multi-layer VPC from scratch, and us
 * **Scaling Strategy**: Target Tracking Scaling Policy targeting Average CPU Utilization.
 
 
-## 2. Prove self-healing and scaling
+### 2. Prove self-healing and scaling
 
-### A. Self-Healing Verification
+#### A. Self-Healing Verification
 * **Action**: Manually terminated a running backend EC2 instance via the console.
 * **Observation**: The ASG detected the unhealthy/missing instance and automatically launched a replacement instance within 1–2 minutes, maintaining the desired capacity.
 
-### B. Auto-Scaling & Scale-Out Event
+#### B. Auto-Scaling & Scale-Out Event
 * **Alarm Trigger Time (Timestamp 1)**: `2026-10-31 19:34:14 UTC` (CloudWatch AlarmHigh entered `ALARM` state triggered by the scaling policy).
 * **Scale-Out Action Time (Timestamp 2)**: `2026-10-31 19:34:22 UTC` (ASG increased desired capacity from 2 to 4 and initiated provisioning of new instances).
 * **Timestamp Gap**: **8 seconds** between the CloudWatch alarm trigger and the ASG launching the additional instances.
 
 
-## 3. Debug
+### 3. Debug
 
 During ALB testing, I frequently encountered `504 Gateway Timeout` errors initially, and both registered targets in the Target Group displayed `Unhealthy`. After investigation, I found that this corresponded to the scenario in Debug Lab 6.3: the security group of the backend instance was not correctly allowing traffic from ALB. I went to the security group used by the EC2 instance (`launch-wizard-1`), clicked **Edit inbound rules** in **Inbound rules**, manually added a rule with **Custom TCP Port 8080** and Source set to **Anywhere-IPv4 (0.0.0.0/0)**, and saved it. After waiting about 2 minutes for the health check to re-polle, the instance status in the Target Group successfully turned green to `Healthy`, and API calls returned to normal.
 
 
-## 4. Clean up
+### 4. Clean up
 
 * ASG-> property-api-asg
 * ALB-> property-alb
