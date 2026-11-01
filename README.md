@@ -99,6 +99,15 @@ The focus of this week is to build a secure multi-layer VPC from scratch, and us
 
 ## 2. Prove self-healing and scaling
 
+### A. Self-Healing Verification
+* **Action**: Manually terminated a running backend EC2 instance via the console.
+* **Observation**: The ASG detected the unhealthy/missing instance and automatically launched a replacement instance within 1–2 minutes, maintaining the desired capacity.
+
+### B. Auto-Scaling & Scale-Out Event
+* **Alarm Trigger Time (Timestamp 1)**: `2026-10-31 19:34:14 UTC` (CloudWatch AlarmHigh entered `ALARM` state triggered by the scaling policy).
+* **Scale-Out Action Time (Timestamp 2)**: `2026-10-31 19:34:22 UTC` (ASG increased desired capacity from 2 to 4 and initiated provisioning of new instances).
+* **Timestamp Gap**: **8 seconds** between the CloudWatch alarm trigger and the ASG launching the additional instances.
+
 
 ## 3. Debug
 
