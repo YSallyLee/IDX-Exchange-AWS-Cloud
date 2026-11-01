@@ -83,3 +83,32 @@ The focus of this week is to build a secure multi-layer VPC from scratch, and us
 
 
 [View Week 05 VPC Architecture Resource Map](./week-05/vpc-diagram.png)
+
+
+
+# Week 06 — Elastic Load Balancing & Auto Scaling
+
+## 1. ASG behind an ALB
+
+* **Application**: PropertyLite Flask API running on port `8080` (deployed via Launch Template User Data).
+* **Network & Compute**: 
+  * An **Application Load Balancer (ALB)** spanning 2 Public Subnets.
+  * An **Auto Scaling Group (ASG)** managing EC2 instances across 2 Private Subnets with outbound NAT Gateway connectivity.
+* **Scaling Strategy**: Target Tracking Scaling Policy targeting Average CPU Utilization.
+
+
+## 2. Prove self-healing and scaling
+
+
+## 3. Debug
+
+During ALB testing, I frequently encountered `504 Gateway Timeout` errors initially, and both registered targets in the Target Group displayed `Unhealthy`. After investigation, I found that this corresponded to the scenario in Debug Lab 6.3: the security group of the backend instance was not correctly allowing traffic from ALB. I went to the security group used by the EC2 instance (`launch-wizard-1`), clicked **Edit inbound rules** in **Inbound rules**, manually added a rule with **Custom TCP Port 8080** and Source set to **Anywhere-IPv4 (0.0.0.0/0)**, and saved it. After waiting about 2 minutes for the health check to re-polle, the instance status in the Target Group successfully turned green to `Healthy`, and API calls returned to normal.
+
+
+## 4. Clean up
+
+* ASG-> property-api-asg
+* ALB-> property-alb
+* Target Group-> property-api-tg
+* Launch Template-> property-api-template
+* NAT Gateway
