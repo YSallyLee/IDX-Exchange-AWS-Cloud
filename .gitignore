@@ -1,2 +1,4 @@
 venv/
 rets_property.sql
+.terraform/
+*.tfstate*
